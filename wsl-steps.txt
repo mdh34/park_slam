@@ -1,0 +1,53 @@
+#ubuntu 20.04 /ros noetic?
+#windows X server is required for visualisation, e.g. vcxsrv or use foxglove
+#windows 11 doesn't need, gui support included
+
+sudo apt update && sudo apt upgrade
+#ros noetic desktop-full install
+
+
+#ros workspace in bash:
+echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc
+source ~/.bashrc
+
+sudo apt install -y build-essential git python3-rosdep python3-rosinstall python3-rosinstall-generator python3-wstool ros-noetic-gmapping ros-noetic-hector-trajectory-server ros-noetic-map-server ros-noetic-laser-scan-matcher ros-noetic-slam-toolbox ros-noetic-pcl-ros ros-noetic-geodesy ros-noetic-nmea-msgs ros-noetic-libg2o ros-noetic-rtabmap    
+
+#hdl_graph_slam
+mkdir -p ~/catkin_ws/src
+git clone https://github.com/koide3/ndt_omp.git
+git clone https://github.com/SMRT-AIST/fast_gicp.git --recursive
+git clone https://github.com/koide3/hdl_graph_slam
+
+cd .. && catkin_make -DCMAKE_BUILD_TYPE=Release -j2
+
+echo "source ~/catkin_ws/devel/setup.bash" >> ~/.bashrc
+source ~/.bashrc
+
+#rtab-map
+#install and uninstall binaries to resolve all dependencies
+
+sudo apt install -y ros-noetic-rtabmap ros-noetic-rtabmap-ros
+sudo apt remove ros-noetic-rtabmap ros-noetic-rtabmap-ros
+
+mkdir ~/src/ 
+cd ~/src/ 
+git clone https://github.com/ethz-asl/libpointmatcher.git
+cd libpointmatcher
+mkdir build && cd build
+cmake ..
+make && sudo make install 
+
+sudo add-apt-repository ppa:borglab/gtsam-release-4.0
+sudo apt update 
+sudo apt install -y libgtsam-dev libgtsam-unstable-dev
+
+cd ~/src/
+git clone https://github.com/introlab/rtabmap.git rtabmap
+cd rtabmap/build
+cmake ..
+make -j2
+sudo make install 
+
+cd ~/catkin_ws
+git clone https://github.com/introlab/rtabmap_ros.git src/rtabmap_ros
+catkin_make -j2
